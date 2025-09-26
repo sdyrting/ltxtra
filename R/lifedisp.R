@@ -1,0 +1,1 @@
+# Add functions for calculating life disparity and related measures
