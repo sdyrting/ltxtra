@@ -18,10 +18,11 @@ ogompertz <- function(q,n,olifeexp) {
   
   dx= -n
   
-  ans <- list(Ro=NA,
-              ao=NA,
-              co=NA,
-              bo=NA,
+  ans <- list(Ro=NA, # Force at the start of the open interval
+              a=NA, # Gompertz slope
+              z=NA,   # z = Ro/a 
+              expa=NA, # expa = exp(a)
+              expz=NA, # expz = exp(z)
               errflag=TRUE,
               errmsg='ogompertz: Undefined result')
   
@@ -32,13 +33,14 @@ ogompertz <- function(q,n,olifeexp) {
   dr <- 1.0/beta
   ratio <- -dx/alpha/beta;
   
-  if(is.na(ratio)) return(NA)
+  if(is.na(ratio)) return(ans) # Ratio undefined
   
   if (ratio <= 1.0) {#A solution with a > 0 does not exist. Use constant force model
     ans$Ro <- 1.0/beta
-    ans$ao <- 0.0
-    ans$co <- 1.0
-    ans$bo <- Inf
+    ans$a <- 0.0
+    ans$expa <- 1.0
+    ans$z <- Inf
+    ans$expz <- Inf
     ans$errflag <- FALSE
     ans$errmsg <- ''
     return(ans)
@@ -49,18 +51,18 @@ ogompertz <- function(q,n,olifeexp) {
   a <- astart
   for (j in 1:5) {#Iterate initial guess
     xa <- exp(a*dx)
-    theta <- alpha/(1.0-xa)
-    e1 <- expint::expint(theta,scale=TRUE)
+    z <- alpha/(1.0-xa)
+    e1 <- expint::expint(z,scale=TRUE)
     a <- e1/beta
   }
   
   
   for (i in 1:MAXITS)  {#Newton
     xa <- exp(a*dx)
-    theta <- alpha/(1.0-xa)
-    dtheta <- theta*(xa/(1.0-xa))*dx
-    e1 <- expint::expint(theta,scale=TRUE)
-    de1 <- dtheta*(e1-1.0/theta)
+    z <- alpha/(1.0-xa)
+    dz <- z*(xa/(1.0-xa))*dx
+    e1 <- expint::expint(z,scale=TRUE)
+    de1 <- dz*(e1-1.0/z)
     f <- e1/a-beta
     df <- (de1*a-e1)/(a*a)
     da <- -f/df
@@ -68,12 +70,12 @@ ogompertz <- function(q,n,olifeexp) {
     a <- abs(a)
     if (abs(da) < RELERR*abs(a)) {
       xa <- exp(a*dx)
-      theta <- alpha/(1.0-xa)
-      ans$theta <- theta
-      ans$bo <- exp(theta)
-      ans$co <- exp(a)
-      ans$ao <- a
-      ans$Ro <- theta*a
+      z <- alpha/(1.0-xa)
+      ans$z <- z
+      ans$expz <- exp(z)
+      ans$a <- a
+      ans$expa <- exp(a)
+      ans$Ro <- z*a
       ans$errflag <- FALSE
       ans$errmsg <- ''
       return(ans)
