@@ -1,5 +1,38 @@
 # Add functions for calculating life disparity and related measures
 
+#' Adds a life disparity column to a life table
+#'
+#' @param lt A life table
+#'
+#' @returns A life table with the extra column `vx` giving the life disparity at age `x`
+#' @importFrom magrittr %>%
+#' @importFrom dplyr mutate
+#' @importFrom dplyr lead
+#' @importFrom dplyr lag
+#' @importFrom rlang .data
+#' @export
+#'
+#' @examples
+lifedisp <- function(lt) {
+  
+  BIGAGE <- 200
+  
+  ans <- lt %>% 
+    dplyr::mutate(
+      .nx = dplyr::lead(.data$Age,default=BIGAGE)-.data$Age,
+      .lx = dplyr::lag(cumprod(1-.data$qx),default=1),
+      .dx = .data$.lx-dplyr::lead(.data$.lx,default=0),
+      .Lx = .data$.nx*.data$.lx-(.data$.nx-.data$ax)*.data$.dx,
+      .Tx = rev(cumsum(rev(.data$.Lx))),
+      .OV = ifelse(.data$OpenInterval,olifedisp(lag(.data$qx),lag(.data$.nx),.data$ex),0),
+      .V= ifelse(.data$OpenInterval,.data$.OV*.data$.lx,vfunc(.data$.Lx,.data$.nx,.data$.lx)),
+      .W= .data$.V+dplyr::lead(.data$.Tx,default=0)*log(.data$.lx/dplyr::lead(.data$.lx,default=1)),
+      vx=rev(cumsum(rev(.data$.W)))/.data$.lx) %>%
+    dplyr::select(!c(.data$.nx,.data$.lx,.data$.dx,.data$.Lx,.data$.Tx,.data$.OV,.data$.V,.data$.W))
+  
+  return(ans)
+}
+
 #' Returns life disparity at the open interval using Gompertz model
 #'
 #' @param q Death probability for the last closed interval
@@ -7,10 +40,10 @@
 #' @param olifeexp olifeexp Life expectancy at the start of the open interval
 #'
 #' @returns life disparity
-#' @export
 #'
 #' @examples
 #' olifedisp(0.3,5,10)
+#' @noRd
 olifedisp <- function(q,n,olifeexp) {
   
   
@@ -31,13 +64,37 @@ olifedisp <- function(q,n,olifeexp) {
 
 olifedisp <- Vectorize(olifedisp)
 
+#' Returns V used in backwards recurrence calculation of life disparity
+#'
+#' @param YearsLived Years lived over the age interval
+#' @param AgeInterval Length in years of the age interval
+#' @param SurvFrac Survival fraction at the start of the age interval
+#'
+#' @returns V = int_x1^x2 l(y) log(l1/l(y)) dy
+#' @importFrom dplyr lead
+#' 
+#' @noRd
+vfunc <- function(YearsLived,AgeInterval,SurvFrac) {
+  
+  V <- NA
+  C <- (YearsLived-0.5*AgeInterval*(SurvFrac+dplyr::lead(SurvFrac,default=0)))/(SurvFrac-dplyr::lead(SurvFrac,default=0))/AgeInterval
+  q <- 1- dplyr::lead(SurvFrac,default=0)/SurvFrac
+  A <- q*(1-6*C)
+  B <- 6*q*C
+  V <- vfunc_sqa(A,B)
+  V <- AgeInterval*SurvFrac*V
+  
+  return(V)
+}
 
 #' Returns normalised V from the A and B parameters of the SQA approximation
 #'
 #' @param A Linear coefficient of the survival fraction
 #' @param B Quadratic coefficient of the survival fraction
 #'
-#' @returns Normalised V. V = Normalised V x AgeInterval * SurvFrac
+#' @returns Normalised V. V = Normalised V x AgeInterval x SurvFrac
+#' 
+#' @noRd
 vfunc_sqa <- function(A,B) {
   
   TINY <- 1.0e-9

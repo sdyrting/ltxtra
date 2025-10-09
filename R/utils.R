@@ -7,10 +7,10 @@
 #'
 #' @returns A list of Gompertz parameters
 #' @importFrom expint expint
-#' @export
 #'
 #' @examples
 #' ogompertz(0.3,5,10)
+#' @noRd
 ogompertz <- function(q,n,olifeexp) {
   
   MAXITS <- 20
