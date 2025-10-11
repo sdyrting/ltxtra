@@ -25,7 +25,7 @@ lifedisp <- function(lt) {
       .Lx = .data$.nx*.data$.lx-(.data$.nx-.data$ax)*.data$.dx,
       .Tx = rev(cumsum(rev(.data$.Lx))),
       .OV = ifelse(.data$OpenInterval,olifedisp(lag(.data$qx),lag(.data$.nx),.data$ex),0),
-      .V= ifelse(.data$OpenInterval,.data$.OV*.data$.lx,vfunc(.data$.Lx,.data$.nx,.data$.lx)),
+      .V= ifelse(.data$OpenInterval,.data$.OV*.data$.lx,vfunc(.data$.Lx,.data$.nx,.data$.lx,.data$OpenInterval)),
       .W= .data$.V+dplyr::lead(.data$.Tx,default=0)*log(.data$.lx/dplyr::lead(.data$.lx,default=1)),
       vx=rev(cumsum(rev(.data$.W)))/.data$.lx) %>%
     dplyr::select(!c(.data$.nx,.data$.lx,.data$.dx,.data$.Lx,.data$.Tx,.data$.OV,.data$.V,.data$.W))
@@ -74,14 +74,16 @@ olifedisp <- Vectorize(olifedisp)
 #' @importFrom dplyr lead
 #' 
 #' @noRd
-vfunc <- function(YearsLived,AgeInterval,SurvFrac) {
+vfunc <- function(YearsLived,AgeInterval,SurvFrac,OpenInterval) {
   
-  V <- NA
+  ClosedInterval <- !OpenInterval
+  V <- YearsLived
   C <- (YearsLived-0.5*AgeInterval*(SurvFrac+dplyr::lead(SurvFrac,default=0)))/(SurvFrac-dplyr::lead(SurvFrac,default=0))/AgeInterval
   q <- 1- dplyr::lead(SurvFrac,default=0)/SurvFrac
   A <- q*(1-6*C)
   B <- 6*q*C
-  V <- vfunc_sqa(A,B)
+  V[ClosedInterval] <- vfunc_sqa(A[ClosedInterval],B[ClosedInterval])
+  V[OpenInterval] <- NA
   V <- AgeInterval*SurvFrac*V
   
   return(V)
@@ -100,30 +102,39 @@ vfunc_sqa <- function(A,B) {
   TINY <- 1.0e-9
   
   if (any(A+B >= 1)) warning('A+B < 1 violated')
-  if (any(A <= 0)) warning('A > 0 violated')
-  if (any(A+2*B <= 0)) warning('A+2B > 0 violated')
+#  if (any(A <= 0)) warning('A > 0 violated')
+#  if (any(A+2*B <= 0)) warning('A+2B > 0 violated')
+#  v_not_defined <- (A+B >= 1 | A <= 0 | A + 2*B <= 0)
+ 
+  # C0: V not defined
   
+suppressWarnings(
   # C1: B > 0
   R1 <- ((sqrt(4*B+A^2)*((4*B+A^2)*log(abs(sqrt(4*B+A^2)+A))+(-(4*B)-A^2)*log(abs(sqrt(4*B+A^2)-A))))/B^2)/12-
     ((sqrt(4*B+A^2)*((12*B+3*A^2)*log(abs(sqrt(4*B+A^2)+2*B+A))+(-(12*B)-3*A^2)*log(abs(sqrt(4*B+A^2)-2*B-A)))+
         (-(12*B^3)+(36-18*A)*B^2+18*A*B+3*A^3)*log(abs(B+A-1))+8*B^3+(12*A-48)*B^2-6*A^2*B)/B^2)/36  
+)
   
   # C2: B = 0
+suppressWarnings(
   R2 <- ((2*log(abs(A-1))-1)*A^2+(2-4*log(abs(A-1)))*A+2*log(abs(A-1)))/(4*A)
-  
+)
   # C3.1: B < 0, A^2+4*B > 0
+suppressWarnings(
   R3.1 <- ((sqrt(4*B+A^2)*((4*B+A^2)*log(abs(sqrt(4*B+A^2)+A))+(-(4*B)-A^2)*log(abs(sqrt(4*B+A^2)-A))))/B^2)/12-
     ((sqrt(4*B+A^2)*((12*B+3*A^2)*log(abs(sqrt(4*B+A^2)+2*B+A))+(-(12*B)-3*A^2)*log(abs(sqrt(4*B+A^2)-2*B-A)))+
         (-(12*B^3)+(36-18*A)*B^2+18*A*B+3*A^3)*log(abs(B+A-1))+8*B^3+(12*A-48)*B^2-6*A^2*B)/B**2)/36
-  
+)
   # C3.2: B < 0, A^2+4*B < 0
+suppressWarnings(
   R3.2 <- (((12*B^3+(18*A-36)*B^2-18*A*B-3*A^3)*log(abs(B+A-1))+
               sqrt(-(4*B)-A^2)*(2*(12*B+3*A^2)*atan((sqrt(-(4*B)-A^2)*(2*B+A))/(4*B+A^2)))-
               8*B^3+(48-12*A)*B^2+6*A^2*B)/B^2)/36-
     ((sqrt(-(4*B)-A^2)*(4*B+A^2)*atan((A*sqrt(-(4*B)-A^2))/(4*B+A^2)))/B^2)/6
-  
+)
   # C4: |B| < TINY
   R4 <- R2
+
   
   k1 <- B > 0
   k2 <- B == 0
@@ -137,6 +148,7 @@ vfunc_sqa <- function(A,B) {
   ans[k3.1] <- R3.1[k3.1]
   ans[k3.2] <- R3.2[k3.2]
   ans[k4] <- R4[k4]  
+#  ans[v_not_defined] <- NA
   
   return(ans)  
 }
