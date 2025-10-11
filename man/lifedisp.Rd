@@ -15,3 +15,7 @@ A life table with the extra column \code{vx} giving the life disparity at age \c
 \description{
 Adds a life disparity column to a life table
 }
+\examples{
+library(dplyr)
+daus_lt <- aus_2021_2023 \%>\% group_by(State,Sex) \%>\% lifedisp()
+}

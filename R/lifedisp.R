@@ -13,6 +13,8 @@
 #' @export
 #'
 #' @examples
+#' library(dplyr)
+#' daus_lt <- aus_2021_2023 %>% group_by(State,Sex) %>% lifedisp()
 lifedisp <- function(lt) {
   
   BIGAGE <- 200
