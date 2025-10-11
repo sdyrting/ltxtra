@@ -3,7 +3,7 @@
 #' Adds a life disparity column to a life table
 #'
 #' @param lt A life table
-#'
+#' @param method  The approximatiom methed. Can be `'sqa'`, `'enu'`, `'els'` or `'els'`. Defaults to `'sqa'`.
 #' @returns A life table with the extra column `vx` giving the life disparity at age `x`
 #' @importFrom magrittr %>%
 #' @importFrom dplyr mutate
@@ -15,7 +15,61 @@
 #' @examples
 #' library(dplyr)
 #' daus_lt <- aus_2021_2023 %>% group_by(State,Sex) %>% lifedisp()
-lifedisp <- function(lt) {
+lifedisp <- function(lt,method='sqa') {
+  
+  BIGAGE <- 200
+  
+  if (method == 'enu') {
+    ans <- lt %>%
+      mutate(.data$.lx = lag(cumprod(1-.data$qx),default=1),
+             .data$.dx = .data$.lx-lead(.data$.lx,default=0),
+             .data$.nx = lead(.data$Age,default=BIGAGE)-.data$Age,
+             .data$vx = ifelse(.data$OpenInterval,
+                               0.5*.data$.dx*.data$ex,
+                               .data$.dx*(.data$.nx-.data$ax+lead(.data$ex,default=0))),
+             .data$vx = rev(cumsum(rev(.data$vx)))/.data$.lx
+      ) %>%
+      select(!c(.data$.lx,.data$.dx,.data$.nx))
+  } else if (method == 'els') {
+    ans <- lt %>%
+      mutate(.data$.lx = lag(cumprod(1-.data$qx),default=1),
+             .data$.dx = .data$.lx-lead(.data$.lx,default=0),
+             .data$vx = ifelse(.data$OpenInterval,
+                               0.5*.data$.dx*.data$ex,
+                               0.5*.data$.dx*(.data$ex+lead(.data$ex,default=0))),
+             .data$vx = rev(cumsum(rev(.data$vx)))/.data$.lx
+      ) %>%
+      select(!c(.data$.lx,.data$.dx))
+  } else if (method == 'ela') {
+    ans <- lt %>%
+      mutate(.data$.lx = lag(cumprod(1-.data$qx),default=1),
+             .data$.dx = .data$.lx-lead(.data$.lx,default=0),
+             .data$.nx = lead(.data$Age,default=BIGAGE)-.data$Age,
+             .data$vx = ifelse(.data$OpenInterval,.data$.dx*.data$ex,
+                               .data$.dx*(.data$ex+.data$ax/.data$.nx*c(diff(.data$ex),0))),
+             .data$vx = rev(cumsum(rev(.data$vx)))/.data$.lx) %>%
+      select(!c(.data$.lx,.data$.dx,.data$.nx))
+  } else if (method == 'sqa') {
+    ans <- lt %>% lifedisp_sqa()
+  } else {
+    stop(paste0('Unknown approximation method: ',method))
+  }
+  
+  return(ans)
+}
+
+#' Adds a life disparity column to a life table
+#'
+#' @param lt A life table
+#'
+#' @returns A life table with the extra column `vx` giving the life disparity at age `x`
+#' @importFrom magrittr %>%
+#' @importFrom dplyr mutate
+#' @importFrom dplyr lead
+#' @importFrom dplyr lag
+#' @importFrom rlang .data
+#' @noRd
+lifedisp_sqa <- function(lt) {
   
   BIGAGE <- 200
   

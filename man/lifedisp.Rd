@@ -4,10 +4,12 @@
 \alias{lifedisp}
 \title{Adds a life disparity column to a life table}
 \usage{
-lifedisp(lt)
+lifedisp(lt, method = "sqa")
 }
 \arguments{
 \item{lt}{A life table}
+
+\item{method}{The approximatiom methed. Can be \code{'sqa'}, \code{'enu'}, \code{'els'} or \code{'els'}. Defaults to \code{'sqa'}.}
 }
 \value{
 A life table with the extra column \code{vx} giving the life disparity at age \code{x}
