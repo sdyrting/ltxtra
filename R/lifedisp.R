@@ -9,6 +9,7 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr lead
 #' @importFrom dplyr lag
+#' @importFrom dplyr select
 #' @importFrom rlang .data
 #' @export
 #'
@@ -19,36 +20,39 @@ lifedisp <- function(lt,method='sqa') {
   
   BIGAGE <- 200
   
+  ans <- NA
+  
   if (method == 'enu') {
     ans <- lt %>%
-      mutate(.data$.lx = lag(cumprod(1-.data$qx),default=1),
-             .data$.dx = .data$.lx-lead(.data$.lx,default=0),
-             .data$.nx = lead(.data$Age,default=BIGAGE)-.data$Age,
-             .data$vx = ifelse(.data$OpenInterval,
+      dplyr::mutate(
+        .lx = dplyr::lag(cumprod(1-.data$qx),default=1),
+        .dx = .data$.lx-dplyr::lead(.data$.lx,default=0),
+        .nx = dplyr::lead(.data$Age,default=BIGAGE)-.data$Age,
+        vx = ifelse(.data$OpenInterval,
                                0.5*.data$.dx*.data$ex,
-                               .data$.dx*(.data$.nx-.data$ax+lead(.data$ex,default=0))),
-             .data$vx = rev(cumsum(rev(.data$vx)))/.data$.lx
+                               .data$.dx*(.data$.nx-.data$ax+dplyr::lead(.data$ex,default=0))),
+        vx = rev(cumsum(rev(.data$vx)))/.data$.lx
       ) %>%
-      select(!c(.data$.lx,.data$.dx,.data$.nx))
+      dplyr::select(!c(.data$.lx,.data$.dx,.data$.nx))
   } else if (method == 'els') {
     ans <- lt %>%
-      mutate(.data$.lx = lag(cumprod(1-.data$qx),default=1),
-             .data$.dx = .data$.lx-lead(.data$.lx,default=0),
-             .data$vx = ifelse(.data$OpenInterval,
+      mutate(.lx = lag(cumprod(1-.data$qx),default=1),
+             .dx = .data$.lx-lead(.data$.lx,default=0),
+             vx = ifelse(.data$OpenInterval,
                                0.5*.data$.dx*.data$ex,
                                0.5*.data$.dx*(.data$ex+lead(.data$ex,default=0))),
-             .data$vx = rev(cumsum(rev(.data$vx)))/.data$.lx
+             vx = rev(cumsum(rev(.data$vx)))/.data$.lx
       ) %>%
-      select(!c(.data$.lx,.data$.dx))
+      dplyr::select(!c(.data$.lx,.data$.dx))
   } else if (method == 'ela') {
     ans <- lt %>%
-      mutate(.data$.lx = lag(cumprod(1-.data$qx),default=1),
-             .data$.dx = .data$.lx-lead(.data$.lx,default=0),
-             .data$.nx = lead(.data$Age,default=BIGAGE)-.data$Age,
-             .data$vx = ifelse(.data$OpenInterval,.data$.dx*.data$ex,
+      mutate(.lx = lag(cumprod(1-.data$qx),default=1),
+             .dx = .data$.lx-lead(.data$.lx,default=0),
+             .nx = lead(.data$Age,default=BIGAGE)-.data$Age,
+             vx = ifelse(.data$OpenInterval,.data$.dx*.data$ex,
                                .data$.dx*(.data$ex+.data$ax/.data$.nx*c(diff(.data$ex),0))),
-             .data$vx = rev(cumsum(rev(.data$vx)))/.data$.lx) %>%
-      select(!c(.data$.lx,.data$.dx,.data$.nx))
+             vx = rev(cumsum(rev(.data$vx)))/.data$.lx) %>%
+      dplyr::select(!c(.data$.lx,.data$.dx,.data$.nx))
   } else if (method == 'sqa') {
     ans <- lt %>% lifedisp_sqa()
   } else {
@@ -62,11 +66,12 @@ lifedisp <- function(lt,method='sqa') {
 #'
 #' @param lt A life table
 #'
-#' @returns A life table with the extra column `vx` giving the life disparity at age `x`
+#' @returns A life table with life disparity calculated using the SQA method
 #' @importFrom magrittr %>%
 #' @importFrom dplyr mutate
 #' @importFrom dplyr lead
 #' @importFrom dplyr lag
+#' @importFrom dplyr select
 #' @importFrom rlang .data
 #' @noRd
 lifedisp_sqa <- function(lt) {
