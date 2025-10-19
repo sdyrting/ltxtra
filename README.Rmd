@@ -23,21 +23,21 @@ An R package for calculating non-standard life table variables
 
 ## Installation
 
-<!--
 You can install the development version of ltxtra from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("pak")
 pak::pak("sdyrting/ltxtra")
 ```
--->
 
+<!--
 To install ltxtra from its tarball, change working directory to directory of the tarball and enter the following in the R console.
 
 ``` r
 # install.packages('devtools') ## Install devtools if you don't have it
 devtools::install_local('./ltxtra-0.0.0.9000.tar.gz')
 ```
+-->
 
 ## Example: Adding life disparity to a life table
 
