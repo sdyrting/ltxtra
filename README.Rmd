@@ -23,11 +23,20 @@ An R package for calculating non-standard life table variables
 
 ## Installation
 
+<!--
 You can install the development version of ltxtra from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("pak")
 pak::pak("sdyrting/ltxtra")
+```
+-->
+
+To install ltxtra from its tarball, change working directory to directory of the tarball and enter the following in the R console.
+
+``` r
+# install.packages('devtools') ## Install devtools if you don't have it
+devtools::install_local('./ltxtra-0.0.0.9000.tar.gz')
 ```
 
 ## Example: Adding life disparity to a life table
@@ -38,13 +47,14 @@ This is a basic example which shows you how to solve a common problem:
 library(ltxtra)
 library(dplyr)
 
-head(aus_2021_2023)
+head(aus_2021_2023 %>% select(!c(mx,ax)))
 
 daus_lt <- aus_2021_2023 %>% group_by(State,Sex) %>% lifedisp()
 
-head(daus_lt)
+head(daus_lt %>% select(!c(mx,ax)))
 ```
 
+<!--
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 
 ```{r cars}
@@ -60,3 +70,4 @@ plot(pressure)
 ```
 
 In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+-->

@@ -1,3 +1,3 @@
-3# ltxtra (development version)
+# ltxtra 0.0.0.9000
 
-* Initial CRAN submission.
+* Calculates life disparity 
