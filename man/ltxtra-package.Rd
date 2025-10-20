@@ -6,7 +6,7 @@
 \alias{ltxtra-package}
 \title{ltxtra: Add Non-Standard Columns To a Life Table}
 \description{
-A framework for analytically calculating non-standard life table variables. You provide the basic life table, then use 'lxtra' functions to add new columns.
+A framework for analytically calculating non-standard life table variables. You provide the basic life table, then use 'ltxtra' functions to add new columns.
 }
 \author{
 \strong{Maintainer}: Sigurd Dyrting \email{sigurd.dyrting@cdu.edu.au} (\href{https://orcid.org/0000-0002-1939-085X}{ORCID})
