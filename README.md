@@ -28,7 +28,7 @@ devtools::install_local('./ltxtra-0.0.0.9000.tar.gz')
 ```
 -->
 
-## Example: Adding life disparity to a life table
+## Example 1: Adding life disparity to a life table
 
 This is a basic example which shows you how to solve a common problem:
 
@@ -44,6 +44,8 @@ library(dplyr)
 #> The following objects are masked from 'package:base':
 #> 
 #>     intersect, setdiff, setequal, union
+library(ggplot2)
+#> Warning: package 'ggplot2' was built under R version 4.4.3
 
 head(aus_2021_2023 %>% select(!c(mx,ax)))
 #> # A tibble: 6 × 10
@@ -70,7 +72,13 @@ head(daus_lt %>% select(!c(mx,ax)))
 #> 4 NSW   Female     3 0.00009 9.97e4   8.97 99715 8.22e6  82.5 FALSE         8.64
 #> 5 NSW   Female     4 0.00008 9.97e4   7.98 99706 8.12e6  81.5 FALSE         8.64
 #> 6 NSW   Female     5 0.00007 9.97e4   6.98 99698 8.02e6  80.5 FALSE         8.63
+
+daus_lt %>% ggplot() +
+  geom_line(aes(x=Age,y=vx,group=State,colour=State)) +
+  facet_wrap(vars(Sex))
 ```
+
+<img src="man/figures/README-example-1.png" width="100%" />
 
 <!--
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
