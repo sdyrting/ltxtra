@@ -75,6 +75,7 @@ head(daus_lt %>% select(!c(mx,ax)))
 
 daus_lt %>% ggplot() +
   geom_line(aes(x=Age,y=vx,group=State,colour=State)) +
+  labs(y='Life Disparity')+
   facet_wrap(vars(Sex))
 ```
 
