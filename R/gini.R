@@ -83,7 +83,7 @@ gfunc <- function(YearsLived,AgeInterval,SurvFrac,OpenInterval) {
   B <- 6*q*C
   A <- A[ClosedInterval]
   B <- B[ClosedInterval]
-  G[ClosedInterval] <- 1-A-2.0*B/3.0+A/2.0+A*B/2.0+(A^2)/3.0+(B^2)/5.0
+  G[ClosedInterval] <- 1+(A^2)/3.0+(B^2)/5.0-A-2.0*B/3.0+A*B/2.0
   G[OpenInterval] <- NA
   G <- AgeInterval*G
   
