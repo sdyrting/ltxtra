@@ -36,7 +36,6 @@ column to a life table:
 ``` r
 library(ltxtra)
 library(dplyr)
-#> Warning: package 'dplyr' was built under R version 4.4.3
 #> 
 #> Attaching package: 'dplyr'
 #> The following objects are masked from 'package:stats':
@@ -46,7 +45,6 @@ library(dplyr)
 #> 
 #>     intersect, setdiff, setequal, union
 library(ggplot2)
-#> Warning: package 'ggplot2' was built under R version 4.4.3
 
 head(aus_2021_2023 %>% select(!c(mx,ax)))
 #> # A tibble: 6 × 10
@@ -80,8 +78,9 @@ daus_lt %>% ggplot() +
   facet_wrap(vars(Sex))
 ```
 
-<img src="man/figures/README-example1-1.png" width="100%" /> \## Example
-2
+<img src="man/figures/README-example1-1.png" width="100%" />
+
+## Example 2: HMD and subnational databases
 
 `ltxtra` assumes life tables are in same form as those produced by the
 `HMDHFDplus` package. This makes it easy to import and decorate life
@@ -90,14 +89,6 @@ databases.
 
 ``` r
 library(tidyverse)
-#> Warning: package 'tidyverse' was built under R version 4.4.2
-#> Warning: package 'tibble' was built under R version 4.4.3
-#> Warning: package 'tidyr' was built under R version 4.4.3
-#> Warning: package 'readr' was built under R version 4.4.2
-#> Warning: package 'purrr' was built under R version 4.4.2
-#> Warning: package 'stringr' was built under R version 4.4.3
-#> Warning: package 'forcats' was built under R version 4.4.2
-#> Warning: package 'lubridate' was built under R version 4.4.2
 #> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 #> ✔ forcats   1.0.0     ✔ stringr   1.5.2
 #> ✔ lubridate 1.9.3     ✔ tibble    3.2.1
@@ -108,7 +99,6 @@ library(tidyverse)
 #> ✖ dplyr::lag()    masks stats::lag()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 library(HMDHFDplus)
-#> Warning: package 'HMDHFDplus' was built under R version 4.4.3
 library(ltxtra)
 library(ggplot2)
 

@@ -43,7 +43,7 @@ devtools::install_local('./ltxtra-0.0.0.9000.tar.gz')
 
 This is a basic example which shows you how to add a life disparity column to a life table:
 
-```{r example1}
+```{r example1, warning=FALSE}
 library(ltxtra)
 library(dplyr)
 library(ggplot2)
@@ -59,11 +59,12 @@ daus_lt %>% ggplot() +
   labs(y='Life Disparity (Years)')+
   facet_wrap(vars(Sex))
 ```
-## Example 2
+
+## Example 2: HMD and subnational databases
 
 `ltxtra` assumes life tables are in same form as those produced by the `HMDHFDplus` package. This makes it easy to import and decorate life tables from the Human Mortality Database and associated subnational databases.
 
-```{r example2,fig.cap='Japanese Adult Life Expectancy and Disparity by Year and Sex'}
+```{r example2,fig.cap='Japanese Adult Life Expectancy and Disparity by Year and Sex',warning=FALSE}
 library(tidyverse)
 library(HMDHFDplus)
 library(ltxtra)
