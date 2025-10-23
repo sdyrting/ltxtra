@@ -74,7 +74,7 @@ prefID <- '00' #All Japan
 jpn_lt <- readJMDweb(prefID,"fltper_1x1") %>% 
   mutate(Sex = 'Female') %>%
   bind_rows(readJMDweb(prefID,"mltper_1x1") %>% 
-  mutate(Sex = 'Mate')) %>%
+  mutate(Sex = 'Male')) %>%
   group_by(Year,Sex) %>% lifedisp()
 
 adult_age <- 15 
