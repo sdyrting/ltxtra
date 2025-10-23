@@ -75,11 +75,72 @@ head(daus_lt %>% select(!c(mx,ax)))
 
 daus_lt %>% ggplot() +
   geom_line(aes(x=Age,y=vx,group=State,colour=State)) +
-  labs(y='Life Disparity')+
+  labs(y='Life Disparity (Years)')+
   facet_wrap(vars(Sex))
 ```
 
-<img src="man/figures/README-example-1.png" width="100%" />
+<img src="man/figures/README-example1-1.png" width="100%" /> \## Example
+2
+
+`ltxtra` assumes life tables are in same form as those produced by the
+`HMDHFDplus` package. This makes it easy to import and decorate life
+tables from the Human Mortality Database and associated subnational
+databases.
+
+``` r
+library(tidyverse)
+#> Warning: package 'tidyverse' was built under R version 4.4.2
+#> Warning: package 'tibble' was built under R version 4.4.3
+#> Warning: package 'tidyr' was built under R version 4.4.3
+#> Warning: package 'readr' was built under R version 4.4.2
+#> Warning: package 'purrr' was built under R version 4.4.2
+#> Warning: package 'stringr' was built under R version 4.4.3
+#> Warning: package 'forcats' was built under R version 4.4.2
+#> Warning: package 'lubridate' was built under R version 4.4.2
+#> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+#> ✔ forcats   1.0.0     ✔ stringr   1.5.2
+#> ✔ lubridate 1.9.3     ✔ tibble    3.2.1
+#> ✔ purrr     1.0.2     ✔ tidyr     1.3.1
+#> ✔ readr     2.1.5     
+#> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+#> ✖ dplyr::filter() masks stats::filter()
+#> ✖ dplyr::lag()    masks stats::lag()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+library(HMDHFDplus)
+#> Warning: package 'HMDHFDplus' was built under R version 4.4.3
+library(ltxtra)
+library(ggplot2)
+
+prefID <- '00' #All Japan
+
+jpn_lt <- readJMDweb(prefID,"fltper_1x1") %>% 
+  mutate(Sex = 'Female') %>%
+  bind_rows(readJMDweb(prefID,"mltper_1x1") %>% 
+  mutate(Sex = 'Mate')) %>%
+  group_by(Year,Sex) %>% lifedisp()
+
+adult_age <- 15 
+
+jpn_lt %>% mutate(Country='Japan') %>% 
+  filter(Age == adult_age) %>% 
+  pivot_longer(cols=c(ex,vx)) %>%
+  mutate(name=ifelse(name == 'ex', 'Adult Life Expectancy','Adult Life Disparity'),
+         name=factor(name,levels=c('Adult Life Expectancy','Adult Life Disparity'))) %>%
+  ggplot() + 
+  geom_line(aes(x=Year,y=value, group=Sex,colour=Sex)) +
+  facet_wrap(facets=vars(name),ncol=2,scales='free') +
+  labs(y='Years')
+```
+
+<div class="figure">
+
+<img src="man/figures/README-example2-1.png" alt="Japanese Adult Life Expectancy and Disparity by Year and Sex" width="100%" />
+<p class="caption">
+
+Japanese Adult Life Expectancy and Disparity by Year and Sex
+</p>
+
+</div>
 
 <!--
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:

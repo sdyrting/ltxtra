@@ -41,9 +41,9 @@ devtools::install_local('./ltxtra-0.0.0.9000.tar.gz')
 
 ## Example 1: Adding life disparity to a life table
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to add a life disparity column to a life table:
 
-```{r example}
+```{r example1}
 library(ltxtra)
 library(dplyr)
 library(ggplot2)
@@ -56,25 +56,36 @@ head(daus_lt %>% select(!c(mx,ax)))
 
 daus_lt %>% ggplot() +
   geom_line(aes(x=Age,y=vx,group=State,colour=State)) +
-  labs(y='Life Disparity')+
+  labs(y='Life Disparity (Years)')+
   facet_wrap(vars(Sex))
 ```
+## Example 2
 
+`ltxtra` assumes life tables are in same form as those produced by the `HMDHFDplus` package. This makes it easy to import and decorate life tables from the Human Mortality Database and associated subnational databases.
 
-<!--
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+```{r example2,fig.cap='Japanese Adult Life Expectancy and Disparity by Year and Sex'}
+library(tidyverse)
+library(HMDHFDplus)
+library(ltxtra)
+library(ggplot2)
 
-```{r cars}
-summary(cars)
+prefID <- '00' #All Japan
+
+jpn_lt <- readJMDweb(prefID,"fltper_1x1") %>% 
+  mutate(Sex = 'Female') %>%
+  bind_rows(readJMDweb(prefID,"mltper_1x1") %>% 
+  mutate(Sex = 'Mate')) %>%
+  group_by(Year,Sex) %>% lifedisp()
+
+adult_age <- 15 
+
+jpn_lt %>% mutate(Country='Japan') %>% 
+  filter(Age == adult_age) %>% 
+  pivot_longer(cols=c(ex,vx)) %>%
+  mutate(name=ifelse(name == 'ex', 'Adult Life Expectancy','Adult Life Disparity'),
+         name=factor(name,levels=c('Adult Life Expectancy','Adult Life Disparity'))) %>%
+  ggplot() + 
+  geom_line(aes(x=Year,y=value, group=Sex,colour=Sex)) +
+  facet_wrap(facets=vars(name),ncol=2,scales='free') +
+  labs(y='Years')
 ```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
--->
