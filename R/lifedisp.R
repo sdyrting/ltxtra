@@ -141,8 +141,8 @@ vfunc <- function(YearsLived,AgeInterval,SurvFrac,OpenInterval) {
   V <- YearsLived
   C <- (YearsLived-0.5*AgeInterval*(SurvFrac+dplyr::lead(SurvFrac,default=0)))/(SurvFrac-dplyr::lead(SurvFrac,default=0))/AgeInterval
   q <- 1- dplyr::lead(SurvFrac,default=0)/SurvFrac
-  A <- q*(1-6*C)
-  B <- 6*q*C
+  A <- ifelse(q == 0.0,0.0,q*(1-6*C))
+  B <- ifelse(q == 0.0,0.0,6*q*C)
   V[ClosedInterval] <- vfunc_sqa(A[ClosedInterval],B[ClosedInterval])
   V[OpenInterval] <- NA
   V <- AgeInterval*SurvFrac*V
@@ -161,12 +161,11 @@ vfunc <- function(YearsLived,AgeInterval,SurvFrac,OpenInterval) {
 vfunc_sqa <- function(A,B) {
   
   TINY <- 1.0e-9
-  
+
   if (any(A+B >= 1)) warning('A+B < 1 violated')
 #  if (any(A <= 0)) warning('A > 0 violated')
 #  if (any(A+2*B <= 0)) warning('A+2B > 0 violated')
 #  v_not_defined <- (A+B >= 1 | A <= 0 | A + 2*B <= 0)
- 
   # C0: V not defined
   
 suppressWarnings(
@@ -196,14 +195,15 @@ suppressWarnings(
   # C4: |B| < TINY
   R4 <- R2
 
-  
+  k0 <- A == 0 & B == 0
   k1 <- B > 0
-  k2 <- B == 0
+  k2 <- B == 0 & !k0
   k3.1 <- B < 0 & A^2+4*B > 0
   k3.2 <- B < 0 & A^2+4*B < 0
-  k4 <- abs(B) < TINY
+  k4 <- abs(B) < TINY & !k0
   
   ans <- B
+  ans[k0] <- 0.0
   ans[k1] <- R1[k1]
   ans[k2] <- R2[k2]
   ans[k3.1] <- R3.1[k3.1]
