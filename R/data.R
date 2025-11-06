@@ -16,6 +16,6 @@
 #'    \item{Lx}{Person years lived}
 #'    \item{Tx}{Person years lived after}
 #'    \item{ex}{Life expectancy}
-#'    \item{OpenInterval}{Logical. Flogs whether an interval is open (`TRUE`) or closed (`FALSE`)}
+#'    \item{OpenInterval}{Logical. Flags whether an interval is open (`TRUE`) or closed (`FALSE`)}
 #' }
 "aus_2021_2023"
